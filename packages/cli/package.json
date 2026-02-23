@@ -1,0 +1,25 @@
+{
+  "name": "decision-memory",
+  "version": "0.1.0",
+  "description": "Claude Code için karar hafızası CLI aracı",
+  "type": "module",
+  "bin": {
+    "decision-memory": "./dist/index.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@decision-memory/core": "*",
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {}
+
+}

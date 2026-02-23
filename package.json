@@ -1,0 +1,29 @@
+{
+  "name": "decision-memory-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Claude Code için otomatik karar hafızası sistemi",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build:core": "tsup packages/core/src/index.ts --format esm,cjs --dts --out-dir packages/core/dist",
+    "build:cli": "tsup --config tsup.cli.config.ts",
+    "build:mcp": "tsup packages/mcp-server/src/index.ts --format esm --out-dir packages/mcp-server/dist",
+    "build": "npm run build:core && npm run build:cli && npm run build:mcp",
+    "test": "vitest run packages/core/tests",
+    "test:watch": "vitest packages/core/tests"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "commander": "^12.1.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
