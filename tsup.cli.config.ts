@@ -10,6 +10,7 @@ export default defineConfig({
   sourcemap: false,
   clean: false,
   outDir: "packages/cli/dist",
+  noExternal: ["commander", "@modelcontextprotocol/sdk", "zod"],
   banner: {
     js: "#!/usr/bin/env node",
   },
