@@ -1,4 +1,5 @@
 import { Command } from "commander";
+declare const __CLI_VERSION__: string;
 import { initCommand } from "./commands/init.js";
 import { logCommand } from "./commands/log.js";
 import { searchCommand } from "./commands/search.js";
@@ -9,7 +10,7 @@ const program = new Command();
 program
   .name("decision-memory")
   .description("Claude Code için karar hafızası aracı")
-  .version("0.1.0");
+  .version(__CLI_VERSION__);
 
 program
   .command("init")

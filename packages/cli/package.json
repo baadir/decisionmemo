@@ -1,6 +1,6 @@
 {
   "name": "decision-memory",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Claude Code için karar hafızası — CLI ve MCP server",
   "bin": {
     "decision-memory": "./dist/index.cjs",
