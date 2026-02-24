@@ -22,6 +22,14 @@
     "test:watch": "vitest",
     "clean": "rm -rf dist"
   },
-  "devDependencies": {}
-
+  "devDependencies": {},
+  "files": [
+    "dist",
+    "src"
+  ],
+  "author": "baadir",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -1,25 +1,21 @@
 {
   "name": "decision-memory",
   "version": "0.1.0",
-  "description": "Claude Code için karar hafızası CLI aracı",
+  "description": "Claude Code için karar hafızası — CLI ve MCP server",
   "type": "module",
   "bin": {
-    "decision-memory": "./dist/index.js"
+    "decision-memory": "./dist/index.js",
+    "decision-memory-mcp": "./dist/mcp.js"
   },
-  "exports": {
-    ".": "./dist/index.js"
-  },
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=20.0.0"
   },
-  "scripts": {
-    "build": "tsup",
-    "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "@decision-memory/core": "*",
-    "commander": "^12.1.0"
-  },
-  "devDependencies": {}
-
+  "author": "baadir",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }

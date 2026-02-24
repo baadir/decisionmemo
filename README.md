@@ -1,5 +1,7 @@
 # decision-memory
 
+[![npm](https://img.shields.io/npm/v/decision-memory)](https://www.npmjs.com/package/decision-memory)
+
 **Automatic decision logging for Claude Code.** Every architectural choice your AI assistant makes gets stored in a compact, token-efficient [TOON](https://github.com/toon-format/toon) file — and retrieved automatically when context is lost.
 
 ```
@@ -118,13 +120,16 @@ Priority order:
 
 Commit `DECISIONS.toon` to git — it's a project artifact like `README.md`.
 
-## Packages
+## Package
 
-| Package | Description |
-|---|---|
-| `@decision-memory/core` | TOON parse/write/search (zero dependencies) |
-| `@decision-memory/mcp-server` | MCP server for Claude Code |
-| `decision-memory` | CLI tool |
+Single npm package — CLI and MCP server in one:
+
+```bash
+npm install -g decision-memory   # CLI
+npx decision-memory init         # run without installing
+```
+
+The MCP server binary (`decision-memory-mcp`) is included in the same package and started automatically via `.mcp.json`.
 
 ## How does this compare to Claude Code's MEMORY.md?
 

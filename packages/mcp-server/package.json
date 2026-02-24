@@ -1,0 +1,20 @@
+{
+  "name": "@decision-memory/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for decision-memory — automatic decision logging for Claude Code",
+  "type": "module",
+  "bin": "./dist/index.js",
+  "files": ["dist"],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "author": "baadir",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "zod": "^3.24.1"
+  }
+}
