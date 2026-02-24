@@ -28,21 +28,20 @@ No manual intervention needed.
 
 ## Quickstart (Claude Code)
 
-### 1. Copy integration files to your project
-
-```bash
-npx degit baadir/decisionmemo/integrations/claude-code . --force
-```
-
-This pulls `.mcp.json`, `CLAUDE.md` and `.claude/` directly into your project root — no cloning, no manual copying.
-
-### 2. Initialize DECISIONS.toon
-
 ```bash
 npx decision-memory init
 ```
 
-### 3. Start Claude Code
+This single command:
+- Creates `DECISIONS.toon` in your project root
+- Copies `.mcp.json` (MCP server config)
+- Copies `CLAUDE.md` (session-start instructions for Claude)
+- Copies `.claude/hooks/` (auto-trigger hook)
+- Updates `.gitattributes`
+
+Then restart Claude Code — the MCP server connects automatically.
+
+### Start Claude Code
 
 Claude will automatically:
 - Call `get_context_summary` at session start

@@ -1,16 +1,17 @@
 {
   "name": "decision-memory",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Claude Code için karar hafızası — CLI ve MCP server",
   "bin": {
     "decision-memory": "./dist/index.cjs",
     "decision-memory-mcp": "./dist/mcp.cjs"
   },
   "scripts": {
-    "prepack": "node -e \"require('fs').copyFileSync('../../README.md', 'README.md')\""
+    "prepack": "node -e \"const fs=require('fs'); fs.copyFileSync('../../README.md', 'README.md'); fs.cpSync('../../integrations', 'integrations', {recursive: true});\""
   },
   "files": [
     "dist",
+    "integrations",
     "README.md"
   ],
   "engines": {
