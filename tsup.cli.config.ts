@@ -5,10 +5,10 @@ export default defineConfig({
     index: "packages/cli/src/index.ts",
     mcp: "packages/mcp-server/src/index.ts",
   },
-  format: ["esm"],
+  format: ["cjs"],
   dts: false,
   sourcemap: false,
-  clean: false,
+  clean: true,
   outDir: "packages/cli/dist",
   noExternal: ["commander", "@modelcontextprotocol/sdk", "zod"],
   banner: {
