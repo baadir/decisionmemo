@@ -1,4 +1,5 @@
 export type Impact = "low" | "medium" | "high" | "critical";
+export type ChangeType = "added" | "modified" | "removed" | "refactored";
 
 export interface Decision {
   id: string;
@@ -8,6 +9,14 @@ export interface Decision {
   rationale: string;
   impact: Impact;
   tags: string[];
+}
+
+export interface Change {
+  id: string;
+  ts: string;
+  file: string;
+  type: ChangeType;
+  description: string;
 }
 
 export interface DecisionFileMeta {
@@ -20,6 +29,7 @@ export interface DecisionFileMeta {
 export interface DecisionFile {
   meta: DecisionFileMeta;
   decisions: Decision[];
+  changes: Change[];
 }
 
 export interface SearchQuery {

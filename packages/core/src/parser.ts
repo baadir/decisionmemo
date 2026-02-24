@@ -1,9 +1,7 @@
-import type { Decision, DecisionFile, DecisionFileMeta, Impact } from "./types.js";
+import type { Change, ChangeType, Decision, DecisionFile, DecisionFileMeta, Impact } from "./types.js";
 
 /**
  * Tırnak işaretlerine saygı duyarak CSV satırını alanlara ayırır.
- * Bu fonksiyon projenin en kritik kodudur.
- * Kararlar içinde virgül bulunabilir; regex ile split yapmak yanlış sonuç verir.
  */
 export function splitCsvRow(line: string): string[] {
   const fields: string[] = [];
@@ -13,24 +11,12 @@ export function splitCsvRow(line: string): string[] {
 
   while (i < line.length) {
     const ch = line[i];
-
     if (inQuote) {
       if (ch === "\\") {
-        // Escape sekansı
         const next = line[i + 1];
-        if (next === '"') {
-          current += '"';
-          i += 2;
-          continue;
-        } else if (next === "n") {
-          current += "\n";
-          i += 2;
-          continue;
-        } else if (next === "\\") {
-          current += "\\";
-          i += 2;
-          continue;
-        }
+        if (next === '"') { current += '"'; i += 2; continue; }
+        else if (next === "n") { current += "\n"; i += 2; continue; }
+        else if (next === "\\") { current += "\\"; i += 2; continue; }
         current += ch;
       } else if (ch === '"') {
         inQuote = false;
@@ -38,123 +24,93 @@ export function splitCsvRow(line: string): string[] {
         current += ch;
       }
     } else {
-      if (ch === '"') {
-        inQuote = true;
-      } else if (ch === ",") {
-        fields.push(current);
-        current = "";
-      } else {
-        current += ch;
-      }
+      if (ch === '"') { inQuote = true; }
+      else if (ch === ",") { fields.push(current); current = ""; }
+      else { current += ch; }
     }
     i++;
   }
-
   fields.push(current);
   return fields;
 }
 
-/**
- * TOON tablo başlığını ayrıştırır: "decisions[14]{id,ts,topic,...}"
- * Döndürür: { count: 14, fields: ["id", "ts", "topic", ...] }
- */
-function parseTableHeader(line: string): { count: number; fields: string[] } | null {
+function parseDecisionsHeader(line: string): { count: number; fields: string[] } | null {
   const match = line.match(/^decisions\[(\d+)\]\{([^}]+)\}:$/);
   if (!match) return null;
-  return {
-    count: parseInt(match[1], 10),
-    fields: match[2].split(","),
-  };
+  return { count: parseInt(match[1], 10), fields: match[2].split(",") };
 }
 
-/**
- * Summary satırını ayrıştırır: "summary{...}:"
- */
+function parseChangesHeader(line: string): { count: number; fields: string[] } | null {
+  const match = line.match(/^changes\[(\d+)\]\{([^}]+)\}:$/);
+  if (!match) return null;
+  return { count: parseInt(match[1], 10), fields: match[2].split(",") };
+}
+
 function isSummaryLine(line: string): boolean {
   return line.startsWith("summary{");
 }
 
-/**
- * Karar satırını ayrıştırır, Impact enum kontrolü yapar.
- */
 function parseDecisionRow(fields: string[], values: string[]): Decision {
   const get = (name: string): string => {
     const idx = fields.indexOf(name);
     return idx >= 0 ? values[idx] ?? "" : "";
   };
-
   const impactRaw = get("impact");
   const validImpacts: Impact[] = ["low", "medium", "high", "critical"];
-  const impact: Impact = validImpacts.includes(impactRaw as Impact)
-    ? (impactRaw as Impact)
-    : "medium";
-
+  const impact: Impact = validImpacts.includes(impactRaw as Impact) ? (impactRaw as Impact) : "medium";
   const tagsRaw = get("tags");
   const tags = tagsRaw ? tagsRaw.split("|").filter(Boolean) : [];
-
-  return {
-    id: get("id"),
-    ts: get("ts"),
-    topic: get("topic"),
-    decision: get("decision"),
-    rationale: get("rationale"),
-    impact,
-    tags,
-  };
+  return { id: get("id"), ts: get("ts"), topic: get("topic"), decision: get("decision"), rationale: get("rationale"), impact, tags };
 }
 
-/**
- * TOON dosyasının tüm içeriğini ayrıştırır.
- */
+function parseChangeRow(fields: string[], values: string[]): Change {
+  const get = (name: string): string => {
+    const idx = fields.indexOf(name);
+    return idx >= 0 ? values[idx] ?? "" : "";
+  };
+  const typeRaw = get("type");
+  const validTypes: ChangeType[] = ["added", "modified", "removed", "refactored"];
+  const type: ChangeType = validTypes.includes(typeRaw as ChangeType) ? (typeRaw as ChangeType) : "modified";
+  return { id: get("id"), ts: get("ts"), file: get("file"), type, description: get("description") };
+}
+
 export function parseDecisionFile(content: string): DecisionFile {
   const lines = content.split("\n");
-
   const meta: DecisionFileMeta = {
-    project: "unknown",
-    version: "1",
+    project: "unknown", version: "1",
     created: new Date().toISOString().slice(0, 10),
     updated: new Date().toISOString().slice(0, 10),
   };
-
   const decisions: Decision[] = [];
+  const changes: Change[] = [];
   let tableFields: string[] = [];
-  let inTable = false;
+  let inDecisions = false;
+  let inChanges = false;
   let inSummary = false;
 
   for (const rawLine of lines) {
     const line = rawLine.trimEnd();
-
-    // Yorum ve boş satırları atla
     if (!line || line.startsWith("#")) continue;
-
-    // Summary bloğuna girildi mi?
-    if (isSummaryLine(line)) {
-      inTable = false;
-      inSummary = true;
-      continue;
-    }
-
-    // Summary içindeki satırları atla
+    if (isSummaryLine(line)) { inDecisions = false; inChanges = false; inSummary = true; continue; }
     if (inSummary) continue;
 
-    // Tablo başlığı
-    const tableHeader = parseTableHeader(line);
-    if (tableHeader) {
-      tableFields = tableHeader.fields;
-      inTable = true;
-      continue;
-    }
+    const decisionsHeader = parseDecisionsHeader(line);
+    if (decisionsHeader) { tableFields = decisionsHeader.fields; inDecisions = true; inChanges = false; continue; }
 
-    // Tablo satırları
-    if (inTable && tableFields.length > 0) {
+    const changesHeader = parseChangesHeader(line);
+    if (changesHeader) { tableFields = changesHeader.fields; inChanges = true; inDecisions = false; continue; }
+
+    if (inDecisions && tableFields.length > 0) {
       const values = splitCsvRow(line);
-      if (values.length >= tableFields.length) {
-        decisions.push(parseDecisionRow(tableFields, values));
-      }
+      if (values.length >= tableFields.length) decisions.push(parseDecisionRow(tableFields, values));
+      continue;
+    }
+    if (inChanges && tableFields.length > 0) {
+      const values = splitCsvRow(line);
+      if (values.length >= tableFields.length) changes.push(parseChangeRow(tableFields, values));
       continue;
     }
 
-    // Meta alanlar (key: value)
     const colonIdx = line.indexOf(":");
     if (colonIdx > 0) {
       const key = line.slice(0, colonIdx).trim();
@@ -165,29 +121,21 @@ export function parseDecisionFile(content: string): DecisionFile {
       else if (key === "updated") meta.updated = value;
     }
   }
-
-  return { meta, decisions };
+  return { meta, decisions, changes };
 }
 
-/**
- * Bir Decision nesnesini TOON tablo satırına dönüştürür.
- */
-export function serializeDecisionRow(d: Decision): string {
-  const escapeField = (s: string): string => {
-    if (s.includes(",") || s.includes('"') || s.includes("\n")) {
-      return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n") + '"';
-    }
-    return s;
-  };
+const escapeField = (s: string): string => {
+  if (s.includes(",") || s.includes('"') || s.includes("\n")) {
+    return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n") + '"';
+  }
+  return s;
+};
 
+export function serializeDecisionRow(d: Decision): string {
   const tags = d.tags.join("|");
-  return [
-    d.id,
-    d.ts,
-    d.topic,
-    escapeField(d.decision),
-    escapeField(d.rationale),
-    d.impact,
-    tags,
-  ].join(",");
+  return [d.id, d.ts, d.topic, escapeField(d.decision), escapeField(d.rationale), d.impact, tags].join(",");
+}
+
+export function serializeChangeRow(c: Change): string {
+  return [c.id, c.ts, escapeField(c.file), c.type, escapeField(c.description)].join(",");
 }

@@ -5,6 +5,7 @@ import { logDecisionSchema, logDecisionHandler } from "./tools/log_decision.js";
 import { searchDecisionsSchema, searchDecisionsHandler } from "./tools/search_decisions.js";
 import { getContextSummarySchema, getContextSummaryHandler } from "./tools/get_context_summary.js";
 import { updateDecisionSchema, updateDecisionHandler } from "./tools/update_decision.js";
+import { logChangeSchema, logChangeHandler } from "./tools/log_change.js";
 
 // ÖNEMLİ: MCP server'da console.log KULLANILMAZ.
 // stdio transport JSON-RPC iletişimi için stdout kullanır.
@@ -60,6 +61,18 @@ server.registerTool(
     inputSchema: updateDecisionSchema,
   },
   updateDecisionHandler
+);
+
+server.registerTool(
+  "log_change",
+  {
+    description:
+      "Kod değişikliklerini changelog olarak DECISIONS.toon'a kaydeder. " +
+      "Yeni dosya eklerken, önemli bir dosyayı değiştirirken, silerken veya " +
+      "yeniden yazarken çağırın.",
+    inputSchema: logChangeSchema,
+  },
+  logChangeHandler
 );
 
 async function main() {
