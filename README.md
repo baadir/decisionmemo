@@ -15,14 +15,14 @@ D003,2026-02-12T16:44Z,testing,"Use Vitest","ESM-native project; Jest ESM suppor
 
 - **Context loss is real.** Long sessions and session restarts mean Claude forgets why `JWT RS256` was chosen over `HS256` three days ago.
 - **Re-discussing decided things wastes time.** Every re-debate costs tokens and slows development.
-- **Decisions deserve a home.** Like `CHANGELOG.md` for architecture.
+- **Decisions deserve a home — and so do code changes.** `DECISIONS.toon` is the single source of truth for both architectural choices and code-level changelog.
 
 ## How it works
 
 1. **Auto-trigger**: A Claude Code hook fires after every `Write`/`Edit` operation, nudging Claude to log decisions automatically.
 2. **Session start**: Claude calls `get_context_summary` to orient itself (~200 tokens).
 3. **Before deciding**: Claude calls `search_decisions` to check prior decisions (~50-80 tokens/result).
-4. **After deciding**: Claude calls `log_decision` to record the choice.
+4. **After deciding**: Claude calls `log_decision` to record the choice, or `log_change` to record a code-level change (file added/modified/removed/refactored).
 
 No manual intervention needed.
 
@@ -50,7 +50,7 @@ Claude will automatically:
 
 ## MCP Server
 
-The MCP server is the primary integration method. It exposes 4 tools:
+The MCP server is the primary integration method. It exposes 5 tools:
 
 | Tool | Description |
 |---|---|
@@ -58,6 +58,7 @@ The MCP server is the primary integration method. It exposes 4 tools:
 | `search_decisions` | Search past decisions by keyword/tag |
 | `get_context_summary` | Get compact session-start summary |
 | `update_decision` | Mark a prior decision as superseded |
+| `log_change` | Log a code change (added/modified/removed/refactored) |
 
 ## CLI
 
@@ -101,14 +102,21 @@ updated: YYYY-MM-DD
 decisions[N]{id,ts,topic,decision,rationale,impact,tags}:
 D001,YYYY-MM-DDTHH:MMZ,topic,"Decision text","Rationale text",impact,tag1|tag2
 
+changes[N]{id,ts,file,type,description}:
+C001,YYYY-MM-DDTHH:MMZ,src/auth/login.ts,added,"Initial JWT login handler"
+
 summary{total,high_impact,last_updated,top_topics}:
 N,N,YYYY-MM-DD,topic1|topic2
 ```
 
-**Fields:**
+**Decision fields:**
 - `impact`: `low` | `medium` | `high` | `critical`
 - `tags`: pipe-delimited (`auth|jwt|security`)
 - Fields with commas are quoted: `"Use JWT, not sessions"`
+
+**Change fields:**
+- `type`: `added` | `modified` | `removed` | `refactored`
+- Change IDs: `C001`, `C002`... (separate sequence from decisions)
 
 ## File location
 
