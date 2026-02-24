@@ -29,11 +29,10 @@ No manual intervention needed.
 ### 1. Copy integration files to your project
 
 ```bash
-# Clone or download the repository
-cp -r decision-memory/integrations/claude-code/.mcp.json ./
-cp decision-memory/integrations/claude-code/CLAUDE.md ./
-cp -r decision-memory/integrations/claude-code/.claude/ ./
+npx degit baadir/decisionmemo/integrations/claude-code . --force
 ```
+
+This pulls `.mcp.json`, `CLAUDE.md` and `.claude/` directly into your project root — no cloning, no manual copying.
 
 ### 2. Initialize DECISIONS.toon
 
@@ -126,6 +125,36 @@ Commit `DECISIONS.toon` to git — it's a project artifact like `README.md`.
 | `@decision-memory/core` | TOON parse/write/search (zero dependencies) |
 | `@decision-memory/mcp-server` | MCP server for Claude Code |
 | `decision-memory` | CLI tool |
+
+## How does this compare to Claude Code's MEMORY.md?
+
+Claude Code has three places where context lives. They don't overlap — they complement each other:
+
+| | `MEMORY.md` | `CLAUDE.md` | `DECISIONS.toon` |
+|---|---|---|---|
+| **Written by** | Claude (auto-generated) | You (human) | Claude (via MCP tool) |
+| **Contains** | Discoveries, patterns, debugging notes | Behavioral rules & instructions | Architectural decisions with rationale |
+| **Searchable** | No | No | Yes — keyword + tag search |
+| **Location** | `~/.claude/projects/.../memory/` | Project root | Project root |
+| **Format** | Markdown | Markdown | TOON (39% fewer tokens) |
+
+**In plain terms:**
+- MEMORY.md is Claude's personal notebook ("I noticed this codebase uses X pattern")
+- CLAUDE.md is your instruction manual for Claude ("always call get_context_summary at start")
+- DECISIONS.toon is the project's architecture log ("we chose Postgres over SQLite because...")
+
+All three can be active at once. decision-memory adds the one thing neither MEMORY.md nor CLAUDE.md provides: **searchable, structured, rationale-rich decision history**.
+
+## Compatibility
+
+decision-memory is compatible with any other MCP server or Claude Code tool. It only reads and writes `DECISIONS.toon` — it does not interfere with other tools.
+
+**Execution order when Claude Code starts:**
+1. `.mcp.json` is read → all MCP servers start (including decision-memory)
+2. `CLAUDE.md` is added to the system prompt
+3. Session begins — Claude calls `get_context_summary` per instructions
+
+Other MCP tools (context-mode, etc.) run in parallel with decision-memory. There is no conflict because each MCP server handles its own tools independently.
 
 ## Roadmap
 
